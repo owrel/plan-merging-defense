@@ -1,0 +1,264 @@
+
+
+
+\subsection{Input format}
+\begin{frame}{Input format}
+    \begin{itemize}
+        \item \(vertex/1\) 
+        \item \(edge/2\)
+        \item \(agent/1\) 
+        \item \(start/2\) 
+        \item \(goal/2\) 
+    \end{itemize}
+\end{frame}
+
+
+
+
+\subsection{Base Encoding}
+\begin{frame}[fragile]{Predicate explanation}
+    \begin{itemize}
+        \item \(at(R,P,T)\)
+        \begin{itemize}
+            \item Represent the position of an agent at a specific time step
+        \end{itemize}
+        \item \(move(R,U,V,T)\)
+         \begin{itemize}
+            \item Represent the movement of an agent from a vertex to another at a specific time step
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Base MAPF Encoding}
+    \begin{lstlisting}[style=mystyle, caption={Base MAPF Encoding}]
+        at(R,P,0) :- start(R,P). 
+        time(1..horizon).
+    
+        {move(R,U,V,T) : edge(U,V)} 1 :- agent(R), time(T). 
+    
+        at(R,V,T) :- move(R,_,V,T). 
+        :- move(R,U,_,T), not at(R,U,T-1). 
+        at(R,V,T) :- 
+            at(R,V,T-1), 
+            not move(R,V,_,T), 
+            time(T). 
+    
+        :- { at(R,V,T) }!=1 , agent(R), time(T). 
+    
+        :- {at(R,V,T) : agent(R)} > 1, vertex(V), time(T). 
+        :- move(_,U,V,T), move(_,V,U,T), U < V. 
+            
+        :- goal(R,V), not at(R,V,horizon). 
+    \end{lstlisting}
+\end{frame}
+
+
+\begin{frame}{MAPF Definition}
+    We define MAPF\cite{husvobbass22a} input as such:
+        \begin{itemize}
+            \item A triple $(V,E,A)$
+            \begin{itemize}
+                \item $V,E$ a connected graph
+                \item $V$ a set of vertices
+                \item $E$ a set of edges
+                \item $A$ a set of agents
+            \end{itemize}
+            \item For each agent \(a=(s,g) \in A\), \(s,g \in V\)
+        \end{itemize}
+\end{frame}
+
+
+\begin{frame}{MAPF Definition}
+    Then, we define output as such:
+        \begin{itemize}
+            \item The output is a plan \(\Pi\)
+            \item \(\Pi\) is a collection of $(\pi_a)_{a\in A}$
+            \begin{itemize}
+                \item \(\pi_a\) is a finite sequence of vertices in $V$ 
+                \item \(\pi_a (t) = v\) 
+                \item \(\pi_a(0) = s, \pi_a(|\pi_a|-1) = g, a = (a,g)\)
+            \end{itemize}
+            \item A plan is valid if no conflict occurs
+            \begin{itemize}
+                \item Vertex conflict: given any $a,a'\in A$, $\pi_a(t) = \pi_{a'}(t)$
+                \item Edge conflict: given any $a,a'\in in A$
+                \begin{itemize}
+                    \item $\pi_a(t-1) = \pi_{a'}(t)$
+                    \item $\pi_a(t) = \pi_{a'}(t-1)$
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Input format}
+
+    \begin{lstlisting}[style=mystyle]
+    agent(1). start(1,(2,1)). goal(1,(2,4)). 
+    agent(2). start(2,(2,3)). goal(2,(2,5)).
+    agent(3). start(3,(5,4)). goal(3,(1,4)).
+    
+    vertex((2,3)). vertex((1,4)). vertex((2,4)). vertex((3,4)). vertex((2,2)).
+    vertex((4,4)). vertex((2,1)). vertex((5,4)). vertex((2,5)). 
+    
+    edge((2,4),(1,4)). edge((3,4),(2,4)). edge((2,3),(2,2)). edge((2,4),(2,3)).
+    edge((2,5),(2,4)). edge((2,2),(2,1)). edge((2,3),(2,4)). edge((2,4),(2,5)).
+    edge((2,1),(2,2)). edge((2,2),(2,3)). edge((1,4),(2,4)). edge((2,4),(3,4)).
+    edge((3,4),(4,4)). edge((4,4),(5,4)).
+    
+    % Optional 
+    shortestpath_length(1,3). shortestpath_length(2,2). shortestpath_length(3,4).
+    
+    makespan(4).
+    \end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Base IPF encoding}
+    \begin{lstlisting}[style=mystyle, caption={IPF computation}]
+        time(1..horizon).
+
+        {at(V,0) : vertex(V)} = 1.
+    
+        { move(U,V,T) : edge(U,V)} 1 :- time(T).
+    
+        at(V,T) :- move(_,V,T).
+        :- move(U,_,T), not at(U,T-1).
+    
+        :- { at(V,T) } != 1, time(T).
+    
+        at(V,T) :- at(V,T-1), not move(V,_,T), time(T).
+    
+    \end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}{Eliminating paths using unique heatmap value}
+    \begin{itemize}
+        \item Gather all possible assignments of \((v, t)\) within a \(\tau\)
+        \item We order then given their associated global heatmap value
+        \item We classify vertices with the highest global heatmap value a ``critical''
+        \item We then kill (\(n\)) paths having in their sequence the critical vertex identified in the previous step. 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Principle}
+    If the Global Heatmap value of a vertex at a specific time point is higher than a defined value \(\mathcal{H}\), the vertex is denoted as critical.
+    
+    \[
+    critical\_vertices(\tau) = \{(v,t) | \Phi(\tau,v,t) > \mathcal{H}, (v,t) \in \mathcal{F}(\tau) \}
+    \]
+
+    Thresholds formulas can be defined using any properties.
+\end{frame}
+
+
+\begin{frame}{Simple (Biased) Threshold \& (Biased) Context dependent threshold}
+    
+    Simple (Biased) Threshold:\\[0.5cm]
+    \[
+        \mathcal{H}_{sbt}(A,\Delta) =  \frac{1*\Delta}{|A|}
+    \]
+
+    \begin{itemize}
+        \item Simple equation
+        \item Can denote more or less path as ``critical'' using the bias \(\Delta\)
+        \item But lacks vertex-specific context
+    \end{itemize}
+    
+    (Biased) Context dependent threshold:\\[0.5cm]
+    \[
+        \mathcal{H}_{bcdt}(V,T,A,\Delta) = \frac{npath\_on(V,T)*\Delta}{nagent\_on(V,T) * |A|}    
+    \]
+
+\end{frame}
+
+\begin{frame}{Eliminating paths using sums of global heatmap values}
+    
+    Other approaches focus on only one vertex (or few vertices)  at a time.
+
+    \begin{figure}[H]
+        \includegraphics[width=\widthimg]{img/summed_heatmap_value.drawio.png}
+    \end{figure}
+
+    \begin{itemize}
+        \item Kill Agent quickly if there is not a lot of paths per agents
+        \item The more diverse the paths are, the more efficient the approach seems to be
+    \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Encoding: Towards a partial plan}
+    
+    \begin{lstlisting}[style=mystyle]
+        % Defining collision & possible_path
+        possible_path(R,I):- at(R,I,_,_), not path_killed(R,I). |\label{line:possible_path}|
+        
+        % Constructing a (partial) plan
+        {selected_path(R,I) : possible_path(R,I) }1 :-  agent(R). |\label{line:selecting_candidate}|
+    
+        collision((R1,P1),(R2,P2),T) :- |\label{line:vertex_collision}|
+            R1 != R2, at(R1,P1,V,T), at(R2,P2,V,T),
+            selected_path(R1,P1), selected_path(R2,P2).
+    
+        collision((R1,P1),(R2,P2),T) :- |\label{line:edge_collision}|
+            R1 != R2, at(R1,P1,V1,T), at(R1,P1,V2,T+1), at(R2,P2,V2,T), 
+            at(R2,P2,V1,T+1), selected_path(R1,P1), selected_path(R2,P2).
+        
+        :- collision((R1,P1),(R2,P2),_), |\label{line:no_collision}|
+            selected_path(R1,P1), 
+            selected_path(R2,P2).
+    
+        selected_agent(R) :- selected_path(R,_).  |\label{line:select_agent}|    
+    
+        #maximize {1@1,R : selected_path(R,_)}. |\label{line:more_agent}|
+    \end{lstlisting}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Objective: Creating a subgraph}
+    \begin{lstlisting}[style=small]
+        nvertex(V) :- selected_path(R,I), at(R,I,V,_).
+        nedge(U,V) :- 
+            edge(U,V), 
+            nvertex(U), 
+            nvertex(V).
+    \end{lstlisting}
+    \end{frame}
+
+
+
+\begin{frame}[fragile]{(Partial) Solving Encoding}
+    We can group the two approaches in one encoding:
+    \begin{lstlisting}[style=mystyle, caption={Encoding of final solver}, label={lst:solver}, numbers=left, ,escapechar=|]
+    time(1..horizon).
+
+    at(R,P,0) :- start(R,P).
+
+    { move(R,U,V,T) : nedge(U,V)} 1 :- agent(R), time(T).
+
+    at(R,V,T) :- move(R,_,V,T).
+            :- move(R,U,_,T), not at(R,U,T-1).
+
+    at(R,V,T) :- 
+        at(R,V,T-1), 
+        not move(R,V,_,T), 
+        time(T).
+
+    :- {at(R,V,T)}!=1, agent(R), time(T).|\label{line:one_position_at_a_time}|
+
+    :- { at(R,V,T) : agent(R) }  > 1, nvertex(V), time(T).
+    :- move(_,U,V,T), move(_,V,U,T), U < V.
+
+    goal_reached(R) :- at(R,V,horizon), goal(R,V). |\label{line:ipf_goal_reached}|
+
+    #maximize{1,R : goal_reached(R)}. |\label{line:maximize_goal_reached}|
+\end{lstlisting}
+\end{frame}

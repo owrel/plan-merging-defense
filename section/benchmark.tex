@@ -1,0 +1,62 @@
+
+
+\section{Benchmarks}
+\begin{frame}{Benchmarks}
+    We evaluate different approaches against the base MAPF encoding and against a witness approach: 
+    
+    \(\blacktriangleright\) It consists of one random path per agent converted to a subgraph.
+
+\end{frame}
+
+
+\begin{frame}{Nomenclature for benchmarks}
+
+    \begin{table}[H]
+        \centering
+        \label{tbl:nomenclature_approach}
+        \begin{tabular}{@{}c|c|c@{}}
+        Step Name & Description & Identifier \\ \midrule
+        \multirow{2}{*}{IPF} & No Additional path  (15 paths) & \textbf{N} \\
+         & Additional Path  (30 paths) & \textbf{A} \\ \midrule
+        \multirow{2}{*}{Path Elimination} & Simple threshold & \textbf{St} \\
+         & Summed Heatmap & \textbf{Sh} \\ \midrule
+        \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Solving strategy\end{tabular}} & Pre-computed path & \textbf{Pc} \\
+         & Subgraph & \textbf{Sg} \\ \midrule
+        \multirow{2}{*}{Subgraph strategy} & Corridor & \textbf{C} \\
+         & Diamond & \textbf{D}
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+
+\begin{frame}{Computation time}
+    \tiny
+    \input{tables/tbl_computation_time.tex}
+
+\end{frame}
+
+\begin{frame}{Solving proportion}\
+    \tiny
+    \input{tables/tbl_path_proportion.tex}
+
+\end{frame}
+
+
+\begin{frame}{Detailed performance}
+    \tiny
+    \begin{table}[]
+        \centering
+        \caption{Approach Decomposition}\label{tbl:approach_decomposition}
+        \begin{tabular}{@{}llllll@{}}
+        \toprule
+        \multicolumn{1}{l|}{\multirow{2}{*}{Step Name}} & \multicolumn{3}{c|}{Total time} & \multicolumn{2}{c}{\% of the process} \\ \cmidrule(l){2-6}  
+        \multicolumn{1}{l|}{} & \multicolumn{1}{l|}{Id.} & \multicolumn{1}{c}{AShSg} & \multicolumn{1}{c|}{Witness} & \multicolumn{1}{c}{AShSg} & Witness \\ \midrule
+        IPF & \cellcolor{lightgrey} & 49 & 41  &7\% &10\%  \\
+        Heatmaps Computation & \cellcolor{lightgrey} & 14 &  - &2\% & - \\
+        Summed Heatmap per Path & \cellcolor{lightgrey} & 0 &  - &0\% & - \\
+        Path Elimination & \cellcolor{lightgrey} & 7 &  - &1\% & - \\
+        Path Selection & \cellcolor{lightgrey} & 8 & 1  &1\% &0\%  \\
+        Partial Solving & \cellcolor{lightgrey} & 551 & 352  &87\% &89\%  \\
+        \end{tabular}
+        \end{table}
+\end{frame}

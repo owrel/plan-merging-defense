@@ -1,0 +1,6 @@
+[submodule "toolbox"]
+	path = toolbox
+	url = https://github.com/krr-up/bibliography.git
+[submodule "bibliography"]
+	path = bibliography
+	url = https://github.com/krr-up/bibliography.git

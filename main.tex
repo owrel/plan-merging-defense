@@ -1,0 +1,78 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{relsize}
+\usepackage{listings}
+% \usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{multirow}
+\colorlet{lightgrey}{lightgray}
+\usepackage{colortbl}
+\usepackage[bibstyle=authoryear, style=numeric, citestyle=numeric-comp, backend=bibtex]{biblatex}
+\bibliography{bibliography/krr,bibliography/procs,local}
+\usetheme{Antibes}
+\setbeamertemplate{footline}[frame number]
+\title{Generate, filter and merge single agent paths for Multi Agent Pathfinding using Answer Set Programming}
+\author{Aurélien SIMON}
+\begin{document}
+
+\lstdefinestyle{mystyle}{
+    basicstyle=\tiny,
+    % frame=single,
+    breaklines,
+    columns=fullflexible,
+    breakindent=1.2em,
+    breakatwhitespace,
+    numbers=left, 
+    escapechar=|
+}
+
+
+\lstdefinestyle{small}{
+    basicstyle=\small,
+    % frame=single,
+    breaklines,
+    columns=fullflexible,
+    breakindent=1.2em,
+    breakatwhitespace,
+    numbers=left, 
+    escapechar=|
+}
+
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+\newcommand\widthimg{8cm}
+
+\begin{frame}{Table of Content}\
+    \tiny
+    \tableofcontents
+\end{frame} 
+
+
+\input{section/background.tex}
+\input{section/ipf.tex}
+\input{section/pathselection.tex}
+\input{section/partialsoving.tex}
+\input{section/benchmark.tex}
+\input{section/conclusion.tex}
+
+
+
+\input{section/endslides.tex}
+
+
+\end{document}
